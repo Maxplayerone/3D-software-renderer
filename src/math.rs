@@ -38,9 +38,8 @@ pub fn mul_vec_mat(v: &Vec3, m: &Mat4) -> Vec3 {
         vec.x = vec.x / w;
         vec.y = vec.y / w;
         vec.z = vec.z / w;
-        return vec;
     }
-    Vec3::new(0.0, 0.0, 0.0)
+    vec
 }
 
 pub fn rad(val_in_degrees: f32) -> f32 {

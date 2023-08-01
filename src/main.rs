@@ -27,19 +27,47 @@ fn main() {
                 buffer[(y * WIDTH) + x] = 0x63ff7b;
             }
         }
-        /*
+        
         for i in 0..rend.mesh.triangles.len(){
             let tri = rend.mesh.triangles[i];
-            let vertex1 = mul_vec_mat(&tri.vertices[0], &rend.proj_mat);
-            let vertex2 = mul_vec_mat(&tri.vertices[1], &rend.proj_mat);
-            let vertex3 = mul_vec_mat(&tri.vertices[2], &rend.proj_mat);
-            let tri = Triangle::new(vertex1, vertex2, vertex3);
+            let vertex1 = math::mul_vec_mat(&tri.vertices[0], &rend.proj_mat);
+            let vertex2 = math::mul_vec_mat(&tri.vertices[1], &rend.proj_mat);
+            let vertex3 = math::mul_vec_mat(&tri.vertices[2], &rend.proj_mat);
+            let mut tri = renderer::Triangle::new(vertex1, vertex2, vertex3);
 
+            //scaling
+            
+            tri.vertices[0].x += 1.0;
+            tri.vertices[0].y += 1.0;
+            tri.vertices[1].x += 1.0;
+            tri.vertices[1].y += 1.0;
+            tri.vertices[2].x += 1.0;
+            tri.vertices[2].y += 1.0;
+            
+            tri.vertices[0].x *= 0.5 * WIDTH as f32;
+            tri.vertices[0].y *= 0.5 * HEIGHT as f32;
+            tri.vertices[1].x *= 0.5 * WIDTH as f32;
+            tri.vertices[1].y *= 0.5 * HEIGHT as f32;
+            tri.vertices[2].x *= 0.5 * WIDTH as f32;
+            tri.vertices[2].y *= 0.5 * HEIGHT as f32;
+
+            //println!("Tri vertices 1 x: {}, y: {} z: {}\n vertices 2 x: {}, y: {} z: {}\n vertices 3 x: {}, y: {} z: {}", tri.vertices[0].x, tri.vertices[0].y, tri.vertices[0].z, tri.vertices[1].x, tri.vertices[1].y, tri.vertices[1].z, tri.vertices[2].x, tri.vertices[2].y, tri.vertices[2].z);
+            /*
+            let x = tri.vertices[0].x as usize;
+            let y = tri.vertices[0].y as usize - 1;
+            buffer[(y * WIDTH) + x] = 0xffffff;
+
+            let x = tri.vertices[1].x as usize;
+            let y = tri.vertices[1].y as usize - 1;
+            //println!("len {}", (y * WIDTH) + x);
+            buffer[(y * WIDTH) + x] = 0xffffff;
+            
+            let x = tri.vertices[2].x as usize;
+            let y = tri.vertices[2].y as usize - 1;
+            buffer[(y * WIDTH) + x] = 0xffffff;
+            */
+            renderer::draw_triangle(&mut buffer, WIDTH, HEIGHT, &tri.vertices[0], &tri.vertices[1], &tri.vertices[2], 0xffffffff);
         }
-        */
-        renderer::draw_line(&mut buffer, WIDTH, &math::Vec3::new(100.0, 50.0, 0.0), &math::Vec3::new(0.0, 0.0, 0.0), 0xffffffff);
-
-        // We unwrap here as we want this code to exit if it fails
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
     }
 }

@@ -1,8 +1,8 @@
 use crate::math;
 
 #[derive(Copy, Clone)]
-struct Triangle {
-    vertices: [math::Vec3; 3],
+pub struct Triangle {
+    pub vertices: [math::Vec3; 3],
 }
 
 impl Triangle {
@@ -13,31 +13,31 @@ impl Triangle {
     }
 }
 
-struct Mesh {
-    triangles: Vec<Triangle>,
+pub struct Mesh {
+    pub triangles: Vec<Triangle>,
 }
 
 impl Mesh {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             triangles: Vec::new(),
         }
     }
 
-    fn push(&mut self, triangle: Triangle) {
+    pub fn push(&mut self, triangle: Triangle) {
         self.triangles.push(triangle)
     }
 }
 
 pub struct Renderer {
-    mesh: Mesh,
+    pub mesh: Mesh,
     //projection matrix stuff
     znear: f32,
     zfar: f32,
     fov: f32,
     fov_rad: f32,
     aspect_ratio: f32,
-    proj_mat: math::Mat4,
+    pub proj_mat: math::Mat4,
 }
 
 impl Renderer {
@@ -45,8 +45,10 @@ impl Renderer {
         let znear = 0.1;
         let zfar = 1000.0;
         let fov = 90.0;
-        let aspect_ratio = width as f32 / height as f32;
-        let fov_rad = 1.0 / math::rad(fov * 0.5).tan();
+        let aspect_ratio = height as f32 / width as f32;
+        //let fov_rad = 1.0 / math::rad(fov * 0.5).tan();
+        let fov_rad = 1.0; //rounding error
+        //println!("Fov rad {}", fov_rad);
 
         //[a * fov_rad, 0      , 0                           , 0]
         //[0          , fov_rad, 0                           , 0]
@@ -141,7 +143,7 @@ impl Renderer {
     }
 }
 
-pub fn draw_line(buffer: &mut Vec<u32>, width: usize, v1: &math::Vec3, v2: &math::Vec3, color: u32) {
+pub fn draw_line(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::Vec3, v2: &math::Vec3, color: u32) {
     let mut x = v1.x;
     let mut y = v1.y;
 
@@ -162,9 +164,17 @@ pub fn draw_line(buffer: &mut Vec<u32>, width: usize, v1: &math::Vec3, v2: &math
         let mut x_usize: usize = x as usize;
         let mut y_usize: usize = y as usize;
         //println!("X usize: {}. Check index {}", x_usize, y_usize);
-        buffer[(y_usize * width) + x_usize] = color;
+        if y_usize < height && x_usize > 0{
+            buffer[(y_usize * width) + x_usize] = color;
+        }
         x = x + dx;
         y = y + dy;
         i = i + 1;
     }
+}
+
+pub fn draw_triangle(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::Vec3, v2: &math::Vec3, v3: &math::Vec3, color: u32){
+    draw_line(buffer, width, height, v1, v2, color);
+    draw_line(buffer, width, height, v2, v3, color);
+    draw_line(buffer, width, height, v3, v1, color);
 }
