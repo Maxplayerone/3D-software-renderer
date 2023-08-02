@@ -20,22 +20,55 @@ fn main() {
     .expect("Unable to Open Window");
 
     let rend = renderer::Renderer::new(WIDTH, HEIGHT);
+    let mut time: f32 = 0.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
-                buffer[(y * WIDTH) + x] = 0x63ff7b;
+                buffer[(y * WIDTH) + x] = 0x0b421a;
             }
         }
+
+        let mut rot_mat_z = math::Mat4::new();
+        rot_mat_z.mat[0][0] = time.cos();
+        rot_mat_z.mat[0][1] = time.sin();
+        rot_mat_z.mat[1][0] = -time.sin();
+        rot_mat_z.mat[1][1] = time.cos();
+        rot_mat_z.mat[2][2] = 1.0;
+        rot_mat_z.mat[3][3] = 1.0;
+
+        let mut rot_mat_x = math::Mat4::new();
+        rot_mat_x.mat[0][0] = 1.0;
+        rot_mat_x.mat[1][1] = (time * 0.5).cos();
+        rot_mat_x.mat[1][2] = (time * 0.5).sin();
+        rot_mat_x.mat[2][1] = -(time * 0.5).sin();
+        rot_mat_x.mat[2][2] = (time * 0.5).cos();
+        rot_mat_x.mat[3][3] = 1.0;
+
         
         for i in 0..rend.mesh.triangles.len(){
-            let tri = rend.mesh.triangles[i];
-            let vertex1 = math::mul_vec_mat(&tri.vertices[0], &rend.proj_mat);
-            let vertex2 = math::mul_vec_mat(&tri.vertices[1], &rend.proj_mat);
-            let vertex3 = math::mul_vec_mat(&tri.vertices[2], &rend.proj_mat);
+            let mut tri = rend.mesh.triangles[i];
+            //rotation
+            let vertex1 = math::mul_vec_mat(&tri.vertices[0], &rot_mat_z);
+            let vertex2 = math::mul_vec_mat(&tri.vertices[1], &rot_mat_z);
+            let vertex3 = math::mul_vec_mat(&tri.vertices[2], &rot_mat_z);
+
+            let mut vertex1 = math::mul_vec_mat(&vertex1, &rot_mat_x);
+            let mut vertex2 = math::mul_vec_mat(&vertex2, &rot_mat_x);
+            let mut vertex3 = math::mul_vec_mat(&vertex3, &rot_mat_x);
+
+            //transform
+            vertex1.z += 3.0;
+            vertex2.z += 3.0;
+            vertex3.z += 3.0;
+
+            let vertex1 = math::mul_vec_mat(&vertex1, &rend.proj_mat);
+            let vertex2 = math::mul_vec_mat(&vertex2, &rend.proj_mat);
+            let vertex3 = math::mul_vec_mat(&vertex3, &rend.proj_mat);
             let mut tri = renderer::Triangle::new(vertex1, vertex2, vertex3);
 
-            //scaling
+            //we first change the coordinate system from (-1, 1) to (0, 1) by adding 1.0 and multiplying by 0.5
+            //and than multiplying by width and height to get the screen coordinates
             
             tri.vertices[0].x += 1.0;
             tri.vertices[0].y += 1.0;
@@ -69,5 +102,6 @@ fn main() {
             renderer::draw_triangle(&mut buffer, WIDTH, HEIGHT, &tri.vertices[0], &tri.vertices[1], &tri.vertices[2], 0xffffffff);
         }
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
+        time += 0.1;
     }
 }
