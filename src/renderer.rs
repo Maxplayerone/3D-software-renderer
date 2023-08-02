@@ -48,7 +48,7 @@ impl Renderer {
         let aspect_ratio = height as f32 / width as f32;
         //let fov_rad = 1.0 / math::rad(fov * 0.5).tan();
         let fov_rad = 1.0; //rounding error
-        //println!("Fov rad {}", fov_rad);
+                           //println!("Fov rad {}", fov_rad);
 
         //[a * fov_rad, 0      , 0                           , 0]
         //[0          , fov_rad, 0                           , 0]
@@ -88,7 +88,7 @@ impl Renderer {
         ));
         //north
         mesh.push(Triangle::new(
-            math::Vec3::new(1.0, 0.0, 0.0),
+            math::Vec3::new(1.0, 0.0, 1.0),
             math::Vec3::new(1.0, 1.0, 1.0),
             math::Vec3::new(0.0, 1.0, 1.0),
         ));
@@ -119,7 +119,7 @@ impl Renderer {
             math::Vec3::new(1.0, 1.0, 1.0),
             math::Vec3::new(1.0, 1.0, 0.0),
         ));
-        //top
+        //bottom
         mesh.push(Triangle::new(
             math::Vec3::new(1.0, 0.0, 1.0),
             math::Vec3::new(0.0, 0.0, 1.0),
@@ -143,7 +143,14 @@ impl Renderer {
     }
 }
 
-pub fn draw_line(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::Vec3, v2: &math::Vec3, color: u32) {
+pub fn draw_line(
+    buffer: &mut Vec<u32>,
+    width: usize,
+    height: usize,
+    v1: &math::Vec3,
+    v2: &math::Vec3,
+    color: u32,
+) {
     let mut x = v1.x;
     let mut y = v1.y;
 
@@ -164,7 +171,7 @@ pub fn draw_line(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::
         let mut x_usize: usize = x as usize;
         let mut y_usize: usize = y as usize;
         //println!("X usize: {}. Check index {}", x_usize, y_usize);
-        if y_usize < height && x_usize > 0{
+        if y_usize < height && x_usize > 0 {
             buffer[(y_usize * width) + x_usize] = color;
         }
         x = x + dx;
@@ -173,7 +180,15 @@ pub fn draw_line(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::
     }
 }
 
-pub fn draw_triangle(buffer: &mut Vec<u32>, width: usize, height: usize, v1: &math::Vec3, v2: &math::Vec3, v3: &math::Vec3, color: u32){
+pub fn draw_triangle(
+    buffer: &mut Vec<u32>,
+    width: usize,
+    height: usize,
+    v1: &math::Vec3,
+    v2: &math::Vec3,
+    v3: &math::Vec3,
+    color: u32,
+) {
     draw_line(buffer, width, height, v1, v2, color);
     draw_line(buffer, width, height, v2, v3, color);
     draw_line(buffer, width, height, v3, v1, color);

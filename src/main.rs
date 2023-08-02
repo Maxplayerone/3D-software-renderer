@@ -21,6 +21,7 @@ fn main() {
 
     let rend = renderer::Renderer::new(WIDTH, HEIGHT);
     let mut time: f32 = 0.0;
+    let camera_vec = math::Vec3::new(0.0, 0.0, 0.0);
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         for y in 0..HEIGHT {
@@ -45,8 +46,7 @@ fn main() {
         rot_mat_x.mat[2][2] = (time * 0.5).cos();
         rot_mat_x.mat[3][3] = 1.0;
 
-        
-        for i in 0..rend.mesh.triangles.len(){
+        for i in 0..rend.mesh.triangles.len() {
             let mut tri = rend.mesh.triangles[i];
             //rotation
             let vertex1 = math::mul_vec_mat(&tri.vertices[0], &rot_mat_z);
@@ -62,44 +62,70 @@ fn main() {
             vertex2.z += 3.0;
             vertex3.z += 3.0;
 
-            let vertex1 = math::mul_vec_mat(&vertex1, &rend.proj_mat);
-            let vertex2 = math::mul_vec_mat(&vertex2, &rend.proj_mat);
-            let vertex3 = math::mul_vec_mat(&vertex3, &rend.proj_mat);
-            let mut tri = renderer::Triangle::new(vertex1, vertex2, vertex3);
+            let mut line1 = math::Vec3::new(0.0, 0.0, 0.0);
+            line1.x = vertex2.x - vertex1.x;
+            line1.y = vertex2.y - vertex1.y;
+            line1.z = vertex2.z - vertex1.z;
 
-            //we first change the coordinate system from (-1, 1) to (0, 1) by adding 1.0 and multiplying by 0.5
-            //and than multiplying by width and height to get the screen coordinates
-            
-            tri.vertices[0].x += 1.0;
-            tri.vertices[0].y += 1.0;
-            tri.vertices[1].x += 1.0;
-            tri.vertices[1].y += 1.0;
-            tri.vertices[2].x += 1.0;
-            tri.vertices[2].y += 1.0;
-            
-            tri.vertices[0].x *= 0.5 * WIDTH as f32;
-            tri.vertices[0].y *= 0.5 * HEIGHT as f32;
-            tri.vertices[1].x *= 0.5 * WIDTH as f32;
-            tri.vertices[1].y *= 0.5 * HEIGHT as f32;
-            tri.vertices[2].x *= 0.5 * WIDTH as f32;
-            tri.vertices[2].y *= 0.5 * HEIGHT as f32;
+            let mut line2 = math::Vec3::new(0.0, 0.0, 0.0);
+            line2.x = vertex3.x - vertex2.x;
+            line2.y = vertex3.y - vertex2.y;
+            line2.z = vertex3.z - vertex2.z;
 
-            //println!("Tri vertices 1 x: {}, y: {} z: {}\n vertices 2 x: {}, y: {} z: {}\n vertices 3 x: {}, y: {} z: {}", tri.vertices[0].x, tri.vertices[0].y, tri.vertices[0].z, tri.vertices[1].x, tri.vertices[1].y, tri.vertices[1].z, tri.vertices[2].x, tri.vertices[2].y, tri.vertices[2].z);
-            /*
-            let x = tri.vertices[0].x as usize;
-            let y = tri.vertices[0].y as usize - 1;
-            buffer[(y * WIDTH) + x] = 0xffffff;
+            let normal = math::normalize(math::cross(&line1, &line2));
+            let mut dist_from_camera_to_point = math::Vec3::new(0.0, 0.0, 0.0);
+            dist_from_camera_to_point.x = vertex1.x - camera_vec.x;
+            dist_from_camera_to_point.y = vertex1.y - camera_vec.y;
+            dist_from_camera_to_point.z = vertex1.z - camera_vec.z;
 
-            let x = tri.vertices[1].x as usize;
-            let y = tri.vertices[1].y as usize - 1;
-            //println!("len {}", (y * WIDTH) + x);
-            buffer[(y * WIDTH) + x] = 0xffffff;
-            
-            let x = tri.vertices[2].x as usize;
-            let y = tri.vertices[2].y as usize - 1;
-            buffer[(y * WIDTH) + x] = 0xffffff;
-            */
-            renderer::draw_triangle(&mut buffer, WIDTH, HEIGHT, &tri.vertices[0], &tri.vertices[1], &tri.vertices[2], 0xffffffff);
+            if math::dot(&normal, &dist_from_camera_to_point) < 0.0 {
+                let vertex1 = math::mul_vec_mat(&vertex1, &rend.proj_mat);
+                let vertex2 = math::mul_vec_mat(&vertex2, &rend.proj_mat);
+                let vertex3 = math::mul_vec_mat(&vertex3, &rend.proj_mat);
+                let mut tri = renderer::Triangle::new(vertex1, vertex2, vertex3);
+
+                //we first change the coordinate system from (-1, 1) to (0, 1) by adding 1.0 and multiplying by 0.5
+                //and than multiplying by width and height to get the screen coordinates
+
+                tri.vertices[0].x += 1.0;
+                tri.vertices[0].y += 1.0;
+                tri.vertices[1].x += 1.0;
+                tri.vertices[1].y += 1.0;
+                tri.vertices[2].x += 1.0;
+                tri.vertices[2].y += 1.0;
+
+                tri.vertices[0].x *= 0.5 * WIDTH as f32;
+                tri.vertices[0].y *= 0.5 * HEIGHT as f32;
+                tri.vertices[1].x *= 0.5 * WIDTH as f32;
+                tri.vertices[1].y *= 0.5 * HEIGHT as f32;
+                tri.vertices[2].x *= 0.5 * WIDTH as f32;
+                tri.vertices[2].y *= 0.5 * HEIGHT as f32;
+
+                //println!("Tri vertices 1 x: {}, y: {} z: {}\n vertices 2 x: {}, y: {} z: {}\n vertices 3 x: {}, y: {} z: {}", tri.vertices[0].x, tri.vertices[0].y, tri.vertices[0].z, tri.vertices[1].x, tri.vertices[1].y, tri.vertices[1].z, tri.vertices[2].x, tri.vertices[2].y, tri.vertices[2].z);
+                /*
+                let x = tri.vertices[0].x as usize;
+                let y = tri.vertices[0].y as usize - 1;
+                buffer[(y * WIDTH) + x] = 0xffffff;
+
+                let x = tri.vertices[1].x as usize;
+                let y = tri.vertices[1].y as usize - 1;
+                //println!("len {}", (y * WIDTH) + x);
+                buffer[(y * WIDTH) + x] = 0xffffff;
+
+                let x = tri.vertices[2].x as usize;
+                let y = tri.vertices[2].y as usize - 1;
+                buffer[(y * WIDTH) + x] = 0xffffff;
+                */
+                renderer::draw_triangle(
+                    &mut buffer,
+                    WIDTH,
+                    HEIGHT,
+                    &tri.vertices[0],
+                    &tri.vertices[1],
+                    &tri.vertices[2],
+                    0xffffffff,
+                );
+            }
         }
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
         time += 0.1;
